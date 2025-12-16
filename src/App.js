@@ -1,24 +1,91 @@
 import React from 'react';
 import './index.scss';
 
+const questions = [
+  {
+    title: 'React - это ... ?',
+    variants: ['библиотека', 'фреймворк', 'приложение'],
+    correct: 0,
+  },
+  {
+    title: 'Компонент - это ... ',
+    variants: ['приложение', 'часть приложения или страницы', 'то, что я не знаю что такое'],
+    correct: 1,
+  },
+  {
+    title: 'Что такое JSX?',
+    variants: [
+      'Это простой HTML',
+      'Это функция',
+      'Это тот же HTML, но с возможностью выполнять JS-код',
+    ],
+    correct: 2,
+  },
+];
+
+function Result({ correct }) {
+  return (
+    <div className="result">
+      <img src="https://cdn-icons-png.flaticon.com/512/2278/2278992.png" alt="Поздравление" />
+      <h2>Вы отгадали {correct} ответов из {questions.length}</h2>
+      <a href='/'>
+        <button>Попробовать снова</button>
+      </a>
+    </div>
+  );
+}
+
+function Game({ step, question, onClickVariant }) {
+  // Показывает только пройденные вопросы
+  const percentage = Math.round((step / questions.length) * 100);
+  
+  if (!question) {
+    return <div>Загрузка вопроса...</div>;
+  }
+  
+  return (
+    <>
+      <div className="progress">
+        <div style={{ width: `${percentage}%` }} className="progress__inner"></div>
+      </div>
+      <h1>{question.title}</h1>
+      <ul>
+        {question.variants.map((text, index) => (
+          <li onClick={() => onClickVariant(index)} key={index}>
+            {text}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 function App() {
-  const [open, setOpen] = React.useState(false); 
+  const [step, setStep] = React.useState(0);
+  const [correct, setCorrect] = React.useState(0);
+  const question = questions[step];
+  
+  const onClickVariant = (index) => {
+    // Проверяем правильность ответа
+    if (index === question.correct) {
+      setCorrect(prev => prev + 1);
+    }
+    
+    // Переходим к следующему вопросу
+    setStep(prev => prev + 1);
+  };
+
   return (
     <div className="App">
-      <button onClick={() => setOpen(true)} className="open-modal-btn">✨ Открыть окно</button>
-      {
-        open && (
-          <div className={`overlay animated ${open ? 'show' : ''}`}>
-            <div className="modal">
-              <svg onClick={() => setOpen(false)} height="200" viewBox="0 0 200 200" width="200">
-                <title />
-                <path d="M114,100l49-49a9.9,9.9,0,0,0-14-14L100,86,51,37A9.9,9.9,0,0,0,37,51l49,49L37,149a9.9,9.9,0,0,0,14,14l49-49,49,49a9.9,9.9,0,0,0,14-14Z" />
-              </svg>
-              <img src="https://media2.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif" alt="GIF" />
-            </div>
-          </div>
-        )
-      }
+      {step < questions.length ? (
+        <Game 
+          step={step} 
+          question={question} 
+          onClickVariant={onClickVariant} 
+        />
+      ) : (
+        <Result correct={correct} />
+      )}
     </div>
   );
 }
